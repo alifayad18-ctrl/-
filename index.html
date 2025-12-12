@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام ERP المتكامل - إدارة المحلات</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 1200px; width: 95%; padding: 40px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #667eea; font-size: 2.5em; margin-bottom: 10px; }
+        .header p { color: #666; font-size: 1.1em; }
+        .login-section { display: block; }
+        .dashboard-section { display: none; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; transition: 0.3s; }
+        .form-group input:focus, .form-group select:focus { border-color: #667eea; outline: none; }
+        .btn { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .stat-card h3 { font-size: 1.2em; margin-bottom: 10px; opacity: 0.9; }
+        .stat-card p { font-size: 2.5em; font-weight: bold; }
+        .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 30px; }
+        .menu-item { background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
+        .menu-item:hover { background: #667eea; color: white; transform: translateY(-5px); box-shadow: 0 5px 15px rgba(102,126,234,0.3); }
+        .menu-item i { font-size: 2em; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table th, table td { padding: 12px; text-align: right; border-bottom: 1px solid #ddd; }
+        table th { background: #667eea; color: white; }
+        table tr:hover { background: #f8f9fa; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 نظام ERP المتكامل</h1>
+            <p>نظام إدارة المحلات مع التكامل الكامل مع هيئة الزكاة والضريبة ZATCA</p>
+        </div>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="login-section">
+            <div class="form-group">
+                <label>👤 اسم المستخدم</label>
+                <input type="text" id="username" placeholder="أدخل اسم المستخدم">
+            </div>
+            <div class="form-group">
+                <label>🔐 كلمة المرور</label>
+                <input type="password" id="password" placeholder="أدخل كلمة المرور">
+            </div>
+            <div class="form-group">
+                <label>🏢 الفرع</label>
+                <select id="branch">
+                    <option value="1">المعلز</option>
+                    <option value="2">الربوة</option>
+                    <option value="3">الروضة</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="login()" style="width: 100%;">🚀 تسجيل الدخول</button>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="dashboard-section">
+            <div id="alertBox"></div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>💰 المبيعات اليومية</h3>
+                    <p id="dailySales">0 ريال</p>
+                </div>
+                <div class="stat-card">
+                    <h3>📦 المخزون</h3>
+                    <p id="inventory">0 منتج</p>
+                </div>
+                <div class="stat-card">
+                    <h3>💵 رصيد الخزينة</h3>
+                    <p id="cashBalance">0 ريال</p>
+                </div>
+                <div class="stat-card">
+                    <h3>📊 عدد الفواتير</h3>
+                    <p id="invoiceCount">0</p>
+                </div>
+            </div>
+
+            <div class="menu">
+                <div class="menu-item" onclick="showSection('pos')">
+                    <div>💳</div>
+                    <h3>نقطة البيع</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('sales')">
+                    <div>🛒</div>
+                    <h3>المبيعات</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('purchases')">
+                    <div>📥</div>
+                    <h3>المشتريات</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('inventory')">
+                    <div>📦</div>
+                    <h3>المخزون</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('customers')">
+                    <div>👥</div>
+                    <h3>العملاء</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('suppliers')">
+                    <div>🏭</div>
+                    <h3>الموردين</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('reports')">
+                    <div>📊</div>
+                    <h3>التقارير</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('zatca')">
+                    <div>📄</div>
+                    <h3>ZATCA</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('shifts')">
+                    <div>⏰</div>
+                    <h3>الشفتات</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('expenses')">
+                    <div>💸</div>
+                    <h3>المصروفات</h3>
+                </div>
+                <div class="menu-item" onclick="showSection('banks')">
+                    <div>🏦</div>
+                    <h3>البنوك</h3>
+                </div>
+                <div class="menu-item" onclick="logout()">
+                    <div>🚪</div>
+                    <h3>تسجيل الخروج</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // التكامل مع قاعدة البيانات SQL
+        const API_URL = 'http://localhost:3000/api';
+        let currentUser = null;
+        let currentBranch = null;
+
+        // تسجيل الدخول
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const branch = document.getElementById('branch').value;
+
+            if (!username || !password) {
+                showAlert('يرجى إدخال اسم المستخدم وكلمة المرور', 'danger');
+                return;
+            }
+
+            try {
+                // محاكاة تسجيل الدخول
+                currentUser = { username, role: 'admin' };
+                currentBranch = branch;
+                
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'block';
+                
+                loadDashboardData();
+                showAlert('تم تسجيل الدخول بنجاح! مرحباً ' + username, 'success');
+            } catch (error) {
+                showAlert('خطأ في تسجيل الدخول: ' + error.message, 'danger');
+            }
+        }
+
+        // تحميل بيانات لوحة التحكم
+        async function loadDashboardData() {
+            // محاكاة البيانات
+            document.getElementById('dailySales').textContent = '15,750 ريال';
+            document.getElementById('inventory').textContent = '450 منتج';
+            document.getElementById('cashBalance').textContent = '8,500 ريال';
+            document.getElementById('invoiceCount').textContent = '127';
+        }
+
+        // عرض الأقسام
+        function showSection(section) {
+            showAlert('تم فتح قسم: ' + getSectionName(section), 'success');
+            // هنا يمكن إضافة الانتقال للأقسام المختلفة
+        }
+
+        function getSectionName(section) {
+            const names = {
+                pos: 'نقطة البيع',
+                sales: 'المبيعات',
+                purchases: 'المشتريات',
+                inventory: 'المخزون',
+                customers: 'العملاء',
+                suppliers: 'الموردين',
+                reports: 'التقارير',
+                zatca: 'التكامل مع ZATCA',
+                shifts: 'الشفتات',
+                expenses: 'المصروفات',
+                banks: 'البنوك'
+            };
+            return names[section] || section;
+        }
+
+        // عرض الرسائل
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertBox.innerHTML = '';
+            }, 3000);
+        }
+
+        // تسجيل الخروج
+        function logout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                currentUser = null;
+                currentBranch = null;
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('dashboardSection').style.display = 'none';
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }
+        }
+
+        // بيانات الدخول الافتراضية
+        // admin / 123456 - للمدير
+        // manager1 / 123456 - مدير المعلز
+        // cashier1 / 123456 - كاشير
+    </script>
+</body>
+</html>
